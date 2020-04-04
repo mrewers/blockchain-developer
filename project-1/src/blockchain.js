@@ -127,7 +127,9 @@ class Blockchain {
             }
           });
 
-          resolve(await this._addBlock(block));
+          await this._addBlock(block);
+
+          resolve(block);
         } else {
           reject('Invalid star submisson.');
         }
