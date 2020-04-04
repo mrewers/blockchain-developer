@@ -51,24 +51,20 @@ class Blockchain {
   /**
    * _addBlock(block) will store a block in the chain
    * @param {*} block
-   * The method will return a Promise that will resolve with the block added
-   * or reject if an error happen during the execution.
-   * You will need to check for the height to assign the `previousBlockHash`,
-   * assign the `timestamp` and the correct `height`...At the end you need to
-   * create the `block hash` and push the block into the chain array. Don't for get
-   * to update the `this.height`
-   * Note: the symbol `_` in the method name indicates in the javascript convention
-   * that this method is a private method.
    */
   _addBlock(block) {
     let self = this;
     return new Promise(async (resolve, reject) => {
       try {
         const newBlock = { ...block };
+        const { chain, height: blockHeight } = self;
 
-        newBlock.hash = SHA256(JSON.stringify(block)).toString();
-        newBlock.previousBlockHash = block.hash;
+        const prevBlock = chain.length === 0 ? null : chain[blockHeight].hash;
+
+        newBlock.previousBlockHash = prevBlock;
         newBlock.time = Date.now();
+        newBlock.height = blockHeight + 1;
+        newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
 
         self.chain.push(newBlock);
         self.height++;
@@ -91,6 +87,7 @@ class Blockchain {
    * @param {*} address
    */
   requestMessageOwnershipVerification(address) {
+    console.log(address);
     return new Promise(resolve => {});
   }
 
@@ -99,13 +96,6 @@ class Blockchain {
    * will allow users to register a new Block with the star object
    * into the chain. This method will resolve with the Block added or
    * reject with an error.
-   * Algorithm steps:
-   * 1. Get the time from the message sent as a parameter example: `parseInt(message.split(':')[1])`
-   * 2. Get the current time: `let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));`
-   * 3. Check if the time elapsed is less than 5 minutes
-   * 4. Veify the message with wallet address and signature: `bitcoinMessage.verify(message, address, signature)`
-   * 5. Create the block and add it to the chain
-   * 6. Resolve with the block added.
    * @param {*} address
    * @param {*} message
    * @param {*} signature
@@ -113,7 +103,33 @@ class Blockchain {
    */
   submitStar(address, message, signature, star) {
     let self = this;
-    return new Promise(async (resolve, reject) => {});
+    return new Promise(async (resolve, reject) => {
+      const messageTime = parseInt(message.split(':')[1]);
+
+      const currentTime = parseInt(
+        new Date()
+          .getTime()
+          .toString()
+          .slice(0, -3)
+      );
+
+      if (currentTime - messageTime < 300) {
+        if (bitcoinMessage.verify(message, address, signature)) {
+          const block = new BlockClass.Block({
+            data: {
+              owner: address,
+              star
+            }
+          });
+
+          resolve(await this._addBlock(block));
+        } else {
+          reject('Invalid star submisson.');
+        }
+      } else {
+        reject('Block time exceeded the limit.');
+      }
+    });
   }
 
   /**
