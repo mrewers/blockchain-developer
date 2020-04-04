@@ -219,6 +219,15 @@ class Blockchain {
               ` ${block.height === 0 ? 'The genesis block' : `Block ${block.height}`} is invalid`
             );
           }
+
+          if (block.height > 0) {
+            const prevBlock = chain[block.height - 1];
+            if (prevBlock.hash !== block.previousBlockHash) {
+              errorLog.push(
+                ` The value 'previousBlockHash' in ${block.height} does not match the hash of the previous block`
+              );
+            }
+          }
         });
 
         resolve(errorLog);

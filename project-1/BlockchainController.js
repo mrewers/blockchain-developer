@@ -1,3 +1,5 @@
+const e = require('express');
+
 /**
  *          BlockchainController
  *       (Do not change this code)
@@ -121,7 +123,9 @@ class BlockchainController {
       try {
         const errors = await this.blockchain.validateChain();
         if (errors.length > 0) {
-          return res.status(200).json(`Error: ${errors}`);
+          return res
+            .status(200)
+            .send(`Found the following error${errors.length === 1 ? '' : 's'}: ${errors}`);
         } else {
           return res.status(200).send('The chain is valid!');
         }
