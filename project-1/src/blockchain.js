@@ -56,17 +56,16 @@ class Blockchain {
     let self = this;
     return new Promise(async (resolve, reject) => {
       try {
-        const newBlock = { ...block };
         const { chain, height: blockHeight } = self;
 
         const prevBlock = chain.length === 0 ? null : chain[blockHeight].hash;
 
-        newBlock.previousBlockHash = prevBlock;
-        newBlock.time = Date.now();
-        newBlock.height = blockHeight + 1;
-        newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
+        block.previousBlockHash = prevBlock;
+        block.time = Date.now();
+        block.height = blockHeight + 1;
+        block.hash = SHA256(JSON.stringify(block)).toString();
 
-        self.chain.push(newBlock);
+        self.chain.push(block);
         self.height++;
 
         resolve(self);
@@ -182,7 +181,22 @@ class Blockchain {
   getStarsByWalletAddress(address) {
     let self = this;
     let stars = [];
-    return new Promise((resolve, reject) => {});
+    return new Promise((resolve, reject) => {
+      try {
+        const { chain } = self;
+
+        chain.forEach(async block => {
+          const { data } = await block.getBData();
+          if (data.owner && data.owner === address) {
+            stars.push(data);
+          }
+        });
+
+        resolve(stars);
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 
   /**
