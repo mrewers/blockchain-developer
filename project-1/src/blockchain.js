@@ -215,7 +215,9 @@ class Blockchain {
           const isValid = await block.validate();
 
           if (!isValid) {
-            errorLog.push(` ${block.height}`);
+            errorLog.push(
+              ` ${block.height === 0 ? 'The genesis block' : `Block ${block.height}`} is invalid`
+            );
           }
         });
 

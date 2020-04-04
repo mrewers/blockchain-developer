@@ -121,7 +121,7 @@ class BlockchainController {
       try {
         const errors = await this.blockchain.validateChain();
         if (errors.length > 0) {
-          return res.status(200).json(`The following blocks are invalid: ${errors}`);
+          return res.status(200).json(`Error: ${errors}`);
         } else {
           return res.status(200).send('The chain is valid!');
         }
